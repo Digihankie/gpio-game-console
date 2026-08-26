@@ -6,16 +6,12 @@ from dispatcher.schema import DispatchError, extract_json_object, looks_like_uns
 
 class ExtractJsonTests(unittest.TestCase):
     def test_plain_object(self):
-        raw = '{"target":"reachy","intent":"say","confirm":false,"say":"你好"}'
-        self.assertEqual(extract_json_object(raw)["target"], "reachy")
+        raw = '{"intent":"fetch","item":"杯子","dest":"客廳","recipient":"Hank","say":"去拿"}'
+        self.assertEqual(extract_json_object(raw)["item"], "杯子")
 
     def test_fenced_markdown(self):
-        raw = "好的\n```json\n{\"target\":\"k10\",\"intent\":\"display\",\"confirm\":false,\"say\":\"待命\"}\n```\n"
+        raw = "好的\n```json\n{\"intent\":\"display\",\"target\":\"k10\",\"say\":\"待命\"}\n```\n"
         self.assertEqual(extract_json_object(raw)["say"], "待命")
-
-    def test_prose_around_object(self):
-        raw = '調度如下：{"target":"reachy","intent":"status","confirm":false,"say":"狀態"} 結束'
-        self.assertEqual(extract_json_object(raw)["intent"], "status")
 
     def test_empty(self):
         with self.assertRaises(DispatchError):
@@ -23,54 +19,104 @@ class ExtractJsonTests(unittest.TestCase):
 
 
 class NormalizeTests(unittest.TestCase):
-    def test_force_confirm_on_greet(self):
+    def test_fetch_forces_dogzilla_and_confirm(self):
         dispatch = normalize_dispatch(
-            {"target": "Reachy", "intent": "greet", "confirm": False, "say": "大家好"}
+            {
+                "intent": "fetch",
+                "target": "reachy",
+                "confirm": False,
+                "item": "紅色馬克杯",
+                "dest": "會議室A",
+                "recipient": "Hank",
+                "say": "出發",
+            },
+            source="k10",
         )
+        self.assertEqual(dispatch.source, "k10")
+        self.assertEqual(dispatch.target, "dogzilla")
+        self.assertEqual(dispatch.intent, "fetch")
         self.assertTrue(dispatch.confirm)
+        self.assertEqual(dispatch.item, "紅色馬克杯")
+        self.assertEqual(dispatch.dest, "會議室A")
+        self.assertEqual(dispatch.recipient, "Hank")
+
+    def test_incomplete_fetch_asks_again(self):
+        dispatch = normalize_dispatch(
+            {"intent": "fetch", "item": "杯子", "dest": "", "recipient": "Hank", "say": "x"},
+            source="reachy",
+        )
+        self.assertEqual(dispatch.intent, "display")
         self.assertEqual(dispatch.target, "reachy")
+        self.assertFalse(dispatch.confirm)
+        self.assertIn("再說一次", dispatch.say)
 
     def test_abort_never_confirms(self):
         dispatch = normalize_dispatch(
-            {"target": "reachy", "intent": "abort", "confirm": True, "say": "停"}
+            {"intent": "abort", "target": "dogzilla", "confirm": True, "say": "停"},
+            source="reachy",
         )
         self.assertFalse(dispatch.confirm)
+        self.assertEqual(dispatch.target, "dogzilla")
 
-    def test_unwired_m3_demo_becomes_k10_display(self):
+    def test_destination_alias(self):
         dispatch = normalize_dispatch(
-            {"target": "m3", "intent": "demo", "confirm": True, "say": "前進"}
+            {
+                "intent": "fetch",
+                "item": "鑰匙",
+                "destination": "門口",
+                "give_to": "客人",
+                "say": "送鑰匙",
+            }
         )
-        self.assertEqual(dispatch.target, "k10")
-        self.assertEqual(dispatch.intent, "display")
-        self.assertFalse(dispatch.confirm)
-        self.assertIn("尚未接入", dispatch.say)
+        self.assertEqual(dispatch.dest, "門口")
+        self.assertEqual(dispatch.recipient, "客人")
 
-    def test_unknown_target(self):
+    def test_unknown_intent(self):
         with self.assertRaises(DispatchError):
-            normalize_dispatch({"target": "drone", "intent": "say", "say": "x"})
-
-    def test_missing_say(self):
-        with self.assertRaises(DispatchError):
-            normalize_dispatch({"target": "reachy", "intent": "say", "say": ""})
+            normalize_dispatch({"intent": "dance", "say": "x"})
 
     def test_crazyflie_query_detected(self):
         self.assertTrue(looks_like_unsupported_aircraft("讓 Crazyflie 起飛"))
-        self.assertFalse(looks_like_unsupported_aircraft("讓 Reachy 揮手"))
+        self.assertFalse(looks_like_unsupported_aircraft("機器狗去拿杯子"))
 
 
 class ExecutorTests(unittest.TestCase):
-    def test_greet_uses_wake_speak_gesture(self):
+    def test_fetch_uses_vlm_then_dog_then_announce(self):
         dispatch = normalize_dispatch(
-            {"target": "reachy", "intent": "greet", "confirm": True, "say": "你好"}
+            {
+                "intent": "fetch",
+                "item": "水杯",
+                "dest": "客廳",
+                "recipient": "Hank",
+                "say": "機器狗去送水杯",
+            },
+            source="reachy",
         )
         tools = [call["tool"] for call in plan_calls(dispatch)]
-        self.assertEqual(tools, ["reachy_wake", "reachy_speak", "reachy_gesture"])
-
-    def test_status_is_read_only(self):
-        dispatch = normalize_dispatch(
-            {"target": "reachy", "intent": "status", "confirm": False, "say": "查狀態"}
+        self.assertEqual(
+            tools,
+            [
+                "nvidia_vlm_locate",
+                "dogzilla_goto",
+                "dogzilla_grasp",
+                "dogzilla_goto",
+                "dogzilla_release",
+                "reachy_speak",
+            ],
         )
-        self.assertEqual(plan_calls(dispatch)[0]["tool"], "reachy_status")
+
+    def test_k10_ingress_announces_on_k10(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "遙控器",
+                "dest": "沙發",
+                "recipient": "媽媽",
+                "say": "送遙控器",
+            },
+            source="k10",
+        )
+        self.assertEqual(plan_calls(dispatch)[-1]["tool"], "k10_display")
 
 
 if __name__ == "__main__":

@@ -1,4 +1,4 @@
-"""Parse and validate the thin Dify fleet-dispatch JSON."""
+"""Parse the thin Dify fetch-planner JSON: item / dest / recipient."""
 
 from __future__ import annotations
 
@@ -7,18 +7,10 @@ import re
 from dataclasses import asdict, dataclass
 from typing import Any
 
-TARGETS = ("reachy", "k10", "m3", "dogzilla")
-INTENTS = ("status", "say", "look", "greet", "demo", "abort", "display")
-UNWIRED_TARGETS = ("m3", "dogzilla")
+SOURCES = ("reachy", "k10")
+TARGETS = ("dogzilla", "reachy", "k10")
+INTENTS = ("fetch", "abort", "status", "say", "display")
 REJECTED_KEYWORDS = ("crazyflie", "crazyradio", "cflib")
-
-# Motion / locomotion that must wait for K10 A even if the model forgot confirm.
-FORCE_CONFIRM = {
-    ("reachy", "greet"),
-    ("reachy", "demo"),
-    ("m3", "demo"),
-    ("dogzilla", "demo"),
-}
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL | re.IGNORECASE)
 
@@ -29,10 +21,14 @@ class DispatchError(ValueError):
 
 @dataclass(frozen=True)
 class Dispatch:
+    source: str
     target: str
     intent: str
     confirm: bool
     say: str
+    item: str = ""
+    dest: str = ""
+    recipient: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -66,33 +62,70 @@ def extract_json_object(text: str) -> dict[str, Any]:
     return parsed
 
 
-def normalize_dispatch(raw: dict[str, Any]) -> Dispatch:
-    target = str(raw.get("target", "")).strip().lower()
+def normalize_source(value: Any, default: str = "reachy") -> str:
+    source = str(value or default).strip().lower()
+    return source if source in SOURCES else default
+
+
+def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispatch:
+    ingress = normalize_source(source if source is not None else raw.get("source"))
     intent = str(raw.get("intent", "")).strip().lower()
+    target = str(raw.get("target", "")).strip().lower()
     say = str(raw.get("say", "")).strip()
+    item = str(raw.get("item", "")).strip()
+    dest = str(raw.get("dest") or raw.get("destination") or "").strip()
+    recipient = str(raw.get("recipient") or raw.get("give_to") or "").strip()
     confirm = _as_bool(raw.get("confirm", False))
 
-    if target not in TARGETS:
-        raise DispatchError(f"unknown target: {target or '(empty)'}")
     if intent not in INTENTS:
         raise DispatchError(f"unknown intent: {intent or '(empty)'}")
-    if not say:
-        raise DispatchError("say is required")
 
-    if target in UNWIRED_TARGETS and intent != "status":
+    if intent == "fetch":
+        if not (item and dest and recipient):
+            return Dispatch(
+                source=ingress,
+                target=ingress,
+                intent="display",
+                confirm=False,
+                say="請再說一次：要拿什麼、送到哪裡、給誰",
+            )
         return Dispatch(
-            target="k10",
-            intent="display",
-            confirm=False,
-            say=f"{target} 尚未接入 Hermes，改為顯示：{say}",
+            source=ingress,
+            target="dogzilla",
+            intent="fetch",
+            confirm=True,
+            say=say or f"機器狗去把{item}送到{dest}給{recipient}",
+            item=item,
+            dest=dest,
+            recipient=recipient,
         )
 
     if intent == "abort":
-        confirm = False
-    elif (target, intent) in FORCE_CONFIRM:
-        confirm = True
+        if target not in TARGETS:
+            target = "dogzilla"
+        return Dispatch(
+            source=ingress,
+            target=target,
+            intent="abort",
+            confirm=False,
+            say=say or "停止目前任務",
+        )
 
-    return Dispatch(target=target, intent=intent, confirm=confirm, say=say)
+    if target not in TARGETS:
+        raise DispatchError(f"unknown target: {target or '(empty)'}")
+    if not say:
+        raise DispatchError("say is required")
+
+    return Dispatch(
+        source=ingress,
+        target=target,
+        intent=intent,
+        confirm=False,
+        say=say,
+        item=item,
+        dest=dest,
+        recipient=recipient,
+    )
 
 
 def looks_like_unsupported_aircraft(query: str) -> bool:

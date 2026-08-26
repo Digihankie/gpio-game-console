@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI used by the Hermes skill: plan a fleet dispatch via the local bridge."""
+"""CLI used by the Hermes skill: plan a fetch via the local Dify bridge."""
 
 from __future__ import annotations
 
@@ -21,15 +21,34 @@ def _post(url: str, payload: dict) -> dict:
         return json.loads(response.read().decode("utf-8"))
 
 
+def _parse(argv: list[str]) -> tuple[str, str]:
+    source = "reachy"
+    words: list[str] = []
+    idx = 1
+    while idx < len(argv):
+        if argv[idx] in {"--source", "-s"} and idx + 1 < len(argv):
+            source = argv[idx + 1]
+            idx += 2
+            continue
+        words.append(argv[idx])
+        idx += 1
+    return source, " ".join(words).strip()
+
+
 def main(argv: list[str]) -> int:
-    query = " ".join(argv[1:]).strip()
+    source, query = _parse(argv)
     if not query:
-        print(json.dumps({"error": "usage: ask_dify.py <natural language>"}, ensure_ascii=False))
+        print(
+            json.dumps(
+                {"error": "usage: ask_dify.py --source reachy|k10 <utterance>"},
+                ensure_ascii=False,
+            )
+        )
         return 2
 
     base = os.environ.get("DIFY_DISPATCH_URL", "http://127.0.0.1:8766").rstrip("/")
     try:
-        result = _post(f"{base}/plan", {"query": query})
+        result = _post(f"{base}/voice", {"source": source, "text": query})
     except urllib.error.URLError as exc:
         print(
             json.dumps(

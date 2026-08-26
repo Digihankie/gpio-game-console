@@ -1,11 +1,10 @@
-# UNIHIKER K10 — 現場確認閘
-# A = 核准目前 pending，B = 拒絕。需要 2.4GHz Wi-Fi 打得到 Thor :8766。
+# UNIHIKER K10 — 隨身助理：顯示取物任務 + A/B 確認閘
+# 語音請走 Thor ASR 後 POST /voice；這支負責看 pending、按 A 讓機器狗出發。
 
 from unihiker_k10 import button, rgb, screen
 import time
 import urequests
 
-# 改成 Thor LAN IP。預設走下午對過的 thor-lan。
 THOR = "http://192.168.8.195:8766"
 
 
@@ -34,7 +33,7 @@ def post_json(path, payload):
 
 def show_idle():
     rgb.clear()
-    paint(["K10 確認閘", "等 Hermes / Dify", "A 核准  B 拒絕", THOR.replace("http://", "")], 0x88CCFF)
+    paint(["K10 隨身助理", "等取物確認", "A 核准  B 拒絕", THOR.replace("http://", "")], 0x88CCFF)
 
 
 def show_pending(item):
@@ -43,12 +42,12 @@ def show_pending(item):
     rgb.write(num=1, R=255, G=160, B=0)
     paint(
         [
-            "待確認",
-            dispatch.get("target", "?"),
-            dispatch.get("intent", "?"),
-            dispatch.get("say", ""),
-            "A 核准",
-            "B 拒絕",
+            "機器狗取物",
+            "拿 " + dispatch.get("item", "?"),
+            "到 " + dispatch.get("dest", "?"),
+            "給 " + dispatch.get("recipient", "?"),
+            "A 出發",
+            "B 取消",
         ],
         0xFFFF66,
     )

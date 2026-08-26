@@ -1,47 +1,43 @@
 ---
 name: ask_dify_dispatch
-description: 把自然語言交給 Thor 上的 Dify Chatflow，拿到艦隊調度 JSON，再依 confirm 決定立刻執行或等 K10 A/B。
+description: 把 Reachy 或 K10 聽到的取物指令交給 Dify 一小段 Chatflow，抽出物品／地點／對象，再讓 Thor 叫機器狗去夾送。
 ---
 
-# Ask Dify Dispatch
+# Ask Dify Dispatch（取物）
 
-當使用者要用中文指揮 Reachy / K10 /（預留）M3 / Dogzilla 時，**先跑這個 skill**，不要自己猜 tool。
+Reachy = 現地個人助理，K10 = 隨身個人助理。兩者都只做**語音入口**。  
+Dify 只做**一小段規劃**。夾、走、放是 **Dogzilla + Thor Nvidia VLM**。
 
-Dify 只負責規劃。真正執行仍是 Hermes：把回傳的 `calls` 轉成 MCP / 既有 tool。
+聽到「拿／夾／送／給誰」時先跑這個 skill，不要自己猜路點。
 
 ## 怎麼跑
 
-在 Thor 上 dispatcher 預設聽 `127.0.0.1:8766`。
-
 ```bash
-python3 /opt/data/skills/ask_dify_dispatch/scripts/ask_dify.py "請 Reachy 跟大家打招呼"
+python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" --source reachy "把桌上馬克杯送到客廳給 Hank"
+python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" --source k10 "把遙控器拿到沙發給媽媽"
 ```
 
-若 skill 被複製到 Hermes home：
+`--source` 必須是聽到語音的那一個助理：`reachy` 或 `k10`。
 
-```bash
-python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" "$USER_TEXT"
-```
+環境變數：`DIFY_DISPATCH_URL`（預設 `http://127.0.0.1:8766`）。
 
-環境變數：
+## Hermes 聽到語音之後
 
-- `DIFY_DISPATCH_URL`（預設 `http://127.0.0.1:8766`）
-- 或直接打 Dify：`DIFY_API_URL`、`DIFY_API_KEY`
+1. Reachy：`reachy_listen`（或 Thor Whisper / SenseVoice）得到文字。
+2. K10：板上把文字 POST 到 `/voice`，或 Hermes 收到後帶 `--source k10`。
+3. 跑這個 script。
+4. 看 stdout：
 
-## 回傳怎麼用
-
-stdout 是 JSON。
-
-| `status` | Hermes 要做的事 |
+| `status` | 要做的事 |
 |---|---|
-| `ready` | 依序呼叫 `calls[].tool`。`reachy_*` 走 Reachy MCP `:9000`。`k10_display` 只把 `say` 講出來／留給 K10 顯示。 |
-| `awaiting_confirm` | **不要動機器人**。告訴使用者看 K10：A 核准、B 拒絕。之後可再 `POST /confirm` 或等 dispatcher 被 K10 解鎖。 |
-| `denied` / `expired` | 中止，不要補跑動作。 |
+| `awaiting_confirm` | **機器狗先別動**。K10 顯示物品／地點／對象，A 才走。 |
+| `ready` | 依序執行 `calls`：`nvidia_vlm_locate` → `dogzilla_goto` → `dogzilla_grasp` → `dogzilla_goto` → `dogzilla_release` → 回原助理播報。 |
+| `denied` / `expired` | 中止。 |
 
-危險動作（揮手、跳舞、問候動起來）即使 Dify 漏標 `confirm`，dispatcher 也會改成 `awaiting_confirm`。
+`nvidia_vlm_locate` 打 Thor 已有的地端 VLM（狗的鏡頭或現場相機），不要另開雲端模型。
 
 ## 不要做
 
-- 不要把 `target=m3` / `dogzilla` 的 `demo` 真的往車上丟；bridge 會改成 K10 顯示「尚未接入」。
-- 不要接受 Crazyflie / 起飛；bridge 會擋。
-- 不要為了作業再載一份大模型。Dify 與 Hermes 共用 Thor 已有的地端 endpoint。
+- 不要讓 Reachy 或 K10 去夾東西。
+- 不要為 Dify 再載一份 LLM；Chatflow 共用 Thor Nvidia endpoint。
+- 不要接 Crazyflie。

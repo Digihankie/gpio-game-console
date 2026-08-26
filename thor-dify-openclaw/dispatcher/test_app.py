@@ -12,7 +12,10 @@ from dispatcher.store import PendingStore
 
 class FakePlanner:
     def chat(self, query: str) -> str:
-        return '{"target":"reachy","intent":"say","confirm":false,"say":"%s"}' % query
+        spoken = query.split("]", 1)[-1].strip()
+        return (
+            '{"intent":"say","target":"reachy","confirm":false,"say":"%s"}' % spoken
+        )
 
 
 class HttpTests(unittest.TestCase):
@@ -47,10 +50,11 @@ class HttpTests(unittest.TestCase):
         status, body = self._json("GET", "/health")
         self.assertEqual(status, 200)
         self.assertTrue(body["ok"])
-        self.assertEqual(body["role"], "dify-hermes-bridge")
+        self.assertEqual(body["role"], "dify-fetch-bridge")
+        self.assertEqual(body["body"], "dogzilla")
 
     def test_plan_and_pending(self):
-        status, body = self._json("POST", "/plan", {"query": "午安"})
+        status, body = self._json("POST", "/voice", {"source": "reachy", "text": "午安"})
         self.assertEqual(status, 200)
         self.assertEqual(body["status"], "ready")
         self.assertEqual(body["calls"][0]["args"]["text"], "午安")

@@ -1,10 +1,10 @@
 version: "0.6.0"
 kind: app
 app:
-  name: Thor Fleet Dispatch
+  name: Thor Fetch Planner
   mode: advanced-chat
-  description: 薄殼 Chatflow。只輸出 {target,intent,confirm,say}，執行交給 Thor Hermes。
-  icon: "🦞"
+  description: 一小段 Chatflow。只抽出 item/dest/recipient，夾送交給 Thor 機器狗。
+  icon: "🐕"
   icon_type: emoji
   icon_background: "#FFEAD5"
   use_icon_as_answer_icon: false
@@ -30,22 +30,23 @@ workflow:
         height: 198
         data:
           type: llm
-          title: 艦隊調度
+          title: 取物規劃
           desc: 只輸出 JSON
           model:
             provider: ""
             name: ""
             mode: chat
             completion_params:
-              temperature: 0.2
+              temperature: 0.1
           prompt_template:
             - role: system
               text: |
-                你是 Thor 艦隊調度器。只輸出一個 JSON 物件，不要 markdown、不要解說。
-                {"target":"reachy|k10|m3|dogzilla","intent":"status|say|look|greet|demo|abort|display","confirm":false,"say":"一句繁體中文"}
-                規則：問候/揮手/跳舞/前進/走路 confirm=true；查狀態/說話/看/顯示/中止 confirm=false；abort 永遠 false。
-                沒有對應身體或 Crazyflie/起飛 → target=k10 intent=display，把原因寫進 say。
-                say 必填。
+                你是 Thor 的取物規劃器。只輸出一個 JSON 物件，不要 markdown、不要解說。
+                fetch：{"intent":"fetch","item":"物品","dest":"位置","recipient":"交給誰","confirm":true,"say":"一句繁中"}
+                缺 item/dest/recipient → {"intent":"display","target":"k10","say":"請再說一次要拿什麼、送到哪、給誰"}
+                取消 → {"intent":"abort","target":"dogzilla","confirm":false,"say":"停止機器狗"}
+                只回話 → {"intent":"say","target":"reachy","say":"..."}（來源助理是 k10 時 target 用 k10）
+                [助理=reachy|k10] 只代表誰聽到語音，夾送身體永遠是機器狗。不要調度飛行器。
             - role: user
               text: "{{#sys.query#}}"
           variables: []
@@ -58,7 +59,7 @@ workflow:
             query_prompt_template: "{{#sys.query#}}"
             window:
               enabled: false
-              size: 10
+              size: 4
       - id: "answer"
         type: custom
         position: { x: 700, y: 280 }
@@ -99,11 +100,11 @@ workflow:
   features:
     file_upload:
       enabled: false
-    opening_statement: "用一句話指揮艦隊。我會只回 JSON，真正動手的是 Thor Hermes。"
+    opening_statement: "跟現地 Reachy 或隨身 K10 說：拿什麼、送到哪、給誰。我只回 JSON。"
     suggested_questions:
-      - "請 Reachy 說午安"
-      - "跟大家打招呼"
-      - "查 Reachy 狀態"
+      - "把桌上的紅色馬克杯拿到客廳茶几給 Hank"
+      - "機器狗停下來"
+      - "把遙控器送到沙發給媽媽"
     suggested_questions_after_answer:
       enabled: false
     speech_to_text:

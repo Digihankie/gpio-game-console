@@ -6,7 +6,14 @@ from typing import Any, Protocol
 
 from . import executor
 from .dify_client import DifyClient
-from .schema import Dispatch, DispatchError, extract_json_object, looks_like_unsupported_aircraft, normalize_dispatch
+from .schema import (
+    Dispatch,
+    DispatchError,
+    extract_json_object,
+    looks_like_unsupported_aircraft,
+    normalize_dispatch,
+    normalize_source,
+)
 from .store import PendingStore
 
 
@@ -29,25 +36,33 @@ class DispatchService:
         return {
             "ok": True,
             "dry_run": self.dry_run,
-            "role": "dify-hermes-bridge",
+            "role": "dify-fetch-bridge",
+            "ingress": ["reachy", "k10"],
+            "body": "dogzilla",
         }
 
-    def plan_query(self, query: str) -> dict[str, Any]:
+    def plan_query(self, query: str, source: str = "reachy") -> dict[str, Any]:
         query = (query or "").strip()
+        source = normalize_source(source)
         if not query:
             raise DispatchError("query is required")
         if looks_like_unsupported_aircraft(query):
             dispatch = Dispatch(
+                source=source,
                 target="k10",
                 intent="display",
                 confirm=False,
-                say="Crazyflie 尚未接入，這次作業不調度飛行器",
+                say="Crazyflie 尚未接入，這次只調度機器狗夾送",
             )
-            return self._ready(dispatch, source="policy")
+            return self._ready(dispatch, planner_source="policy")
 
-        answer = self.planner.chat(query)
-        dispatch = normalize_dispatch(extract_json_object(answer))
-        return self._ready(dispatch, source="dify", raw_answer=answer)
+        prompt = f"[助理={source}] {query}"
+        answer = self.planner.chat(prompt)
+        dispatch = normalize_dispatch(extract_json_object(answer), source=source)
+        return self._ready(dispatch, planner_source="dify", raw_answer=answer)
+
+    def plan_voice(self, source: str, text: str) -> dict[str, Any]:
+        return self.plan_query(text, source=source)
 
     def submit(self, dispatch: Dispatch) -> dict[str, Any]:
         calls = executor.plan_calls(dispatch)
@@ -91,9 +106,14 @@ class DispatchService:
             "dry_run": self.dry_run,
         }
 
-    def _ready(self, dispatch: Dispatch, source: str, raw_answer: str | None = None) -> dict[str, Any]:
+    def _ready(
+        self,
+        dispatch: Dispatch,
+        planner_source: str,
+        raw_answer: str | None = None,
+    ) -> dict[str, Any]:
         result = self.submit(dispatch)
-        result["source"] = source
+        result["planner"] = planner_source
         if raw_answer is not None:
             result["raw_answer"] = raw_answer
         return result

@@ -43,16 +43,18 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         try:
-            if path == "/plan":
+            if path in {"/plan", "/voice"}:
                 query = str(body.get("query") or body.get("text") or "")
-                self._json(200, self.service.plan_query(query))
+                source = str(body.get("source") or "reachy")
+                self._json(200, self.service.plan_voice(source, query))
                 return
             if path == "/dispatch":
                 if "query" in body or "text" in body:
                     query = str(body.get("query") or body.get("text") or "")
-                    self._json(200, self.service.plan_query(query))
+                    source = str(body.get("source") or "reachy")
+                    self._json(200, self.service.plan_voice(source, query))
                     return
-                dispatch = normalize_dispatch(body)
+                dispatch = normalize_dispatch(body, source=body.get("source"))
                 self._json(200, self.service.submit(dispatch))
                 return
             if path == "/confirm":

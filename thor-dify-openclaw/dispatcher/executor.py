@@ -1,4 +1,4 @@
-"""Map a Dispatch onto Reachy MCP tool calls (or a stub for unwired bodies)."""
+"""Map a fetch Dispatch onto Thor NVIDIA + Dogzilla + the speaking assistant."""
 
 from __future__ import annotations
 
@@ -6,39 +6,42 @@ from typing import Any
 
 from .schema import Dispatch
 
-ReachyCall = dict[str, Any]
+ToolCall = dict[str, Any]
 
 
-def plan_calls(dispatch: Dispatch) -> list[ReachyCall]:
-    if dispatch.target == "reachy":
-        return _reachy_calls(dispatch.intent, dispatch.say)
-    if dispatch.target == "k10":
+def plan_calls(dispatch: Dispatch) -> list[ToolCall]:
+    if dispatch.intent == "fetch":
+        return _fetch_calls(dispatch)
+    if dispatch.intent == "abort":
+        if dispatch.target == "dogzilla":
+            return [{"tool": "dogzilla_stop", "args": {}}]
+        if dispatch.target == "reachy":
+            return [
+                {"tool": "reachy_watch_stop", "args": {}},
+                {"tool": "reachy_set_idle_pose", "args": {}},
+            ]
         return [{"tool": "k10_display", "args": {"text": dispatch.say}}]
-    return [{"tool": f"{dispatch.target}_unavailable", "args": {"say": dispatch.say}}]
+    if dispatch.intent == "status" and dispatch.target == "dogzilla":
+        return [{"tool": "dogzilla_status", "args": {}}]
+    if dispatch.target == "reachy":
+        if dispatch.intent == "status":
+            return [{"tool": "reachy_status", "args": {}}]
+        return [{"tool": "reachy_speak", "args": {"text": dispatch.say}}]
+    return [{"tool": "k10_display", "args": {"text": dispatch.say}}]
 
 
-def _reachy_calls(intent: str, say: str) -> list[ReachyCall]:
-    if intent == "status":
-        return [{"tool": "reachy_status", "args": {}}]
-    if intent == "say":
-        return [{"tool": "reachy_speak", "args": {"text": say}}]
-    if intent == "look":
-        return [{"tool": "reachy_scan_for_face", "args": {}}]
-    if intent == "greet":
-        return [
-            {"tool": "reachy_wake", "args": {}},
-            {"tool": "reachy_speak", "args": {"text": say}},
-            {"tool": "reachy_gesture", "args": {"name": "talking"}},
-        ]
-    if intent == "demo":
-        return [
-            {"tool": "reachy_wake", "args": {}},
-            {"tool": "reachy_play_emotion", "args": {"name": "happy"}},
-            {"tool": "reachy_speak", "args": {"text": say}},
-        ]
-    if intent == "abort":
-        return [
-            {"tool": "reachy_watch_stop", "args": {}},
-            {"tool": "reachy_set_idle_pose", "args": {}},
-        ]
-    return [{"tool": "reachy_speak", "args": {"text": say}}]
+def _fetch_calls(dispatch: Dispatch) -> list[ToolCall]:
+    announce = {"tool": "reachy_speak", "args": {"text": dispatch.say}}
+    if dispatch.source == "k10":
+        announce = {"tool": "k10_display", "args": {"text": dispatch.say}}
+    return [
+        {
+            "tool": "nvidia_vlm_locate",
+            "args": {"item": dispatch.item, "camera": "dogzilla"},
+        },
+        {"tool": "dogzilla_goto", "args": {"place": dispatch.item}},
+        {"tool": "dogzilla_grasp", "args": {"item": dispatch.item}},
+        {"tool": "dogzilla_goto", "args": {"place": dispatch.dest}},
+        {"tool": "dogzilla_release", "args": {"recipient": dispatch.recipient}},
+        announce,
+    ]
