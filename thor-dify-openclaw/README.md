@@ -21,6 +21,8 @@ K10 語音（隨身）   ─┘
               Crazyflie 降落；回原助理播報
 ```
 
+劇情皮膚（可選）：嶺南荔枝穿越現代，Crazyflie＝飛鴿、Dogzilla＝驛馬，見 [`drama/lingnan-lychee.md`](drama/lingnan-lychee.md)。
+
 不要再裝第二套 Dify，也不要再載一份大模型。Chatflow 選 Thor 現有 Nvidia endpoint。
 
 ## Dify 就這一段

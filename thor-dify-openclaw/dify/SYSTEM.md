@@ -35,3 +35,5 @@ LLM 用 Thor 已有的 Nvidia 地端 endpoint（和 Hermes 同一份）。
 
 - `[助理=k10] 把桌上紅色馬克杯拿到客廳茶几給 Hank`
   → `{"intent":"fetch","item":"紅色馬克杯","dest":"客廳茶几","recipient":"Hank","scout":"crazyflie","confirm":true,"say":"小飛機先看馬克杯在哪，再讓機器狗送到客廳給 Hank"}`
+- `[助理=reachy] 把那盒嶺南荔枝送到沙發給貴妃`
+  → `{"intent":"fetch","item":"嶺南荔枝","dest":"沙發","recipient":"貴妃","scout":"crazyflie","confirm":true,"say":"飛鴿先探枝頭，驛馬隨後將荔枝送至貴妃案前"}`
