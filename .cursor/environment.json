@@ -1,0 +1,17 @@
+{
+  "name": "gpio-game-console / thor-dify-openclaw",
+  "install": "python3 --version && cd thor-dify-openclaw && python3 -m unittest discover -s dispatcher",
+  "ports": [
+    {
+      "name": "dify-dispatch",
+      "port": 8766
+    }
+  ],
+  "terminals": [
+    {
+      "name": "dify-dispatch",
+      "command": "cd thor-dify-openclaw && DRY_RUN=1 DISPATCH_PORT=8766 python3 -m dispatcher",
+      "description": "Thor Dify->Hermes dispatch bridge (stdlib HTTP API on :8766). Runs in DRY_RUN, so it plans robot-dog calls without moving hardware. Endpoints: GET /health, GET /pending, POST /voice, POST /dispatch, POST /confirm."
+    }
+  ]
+}
