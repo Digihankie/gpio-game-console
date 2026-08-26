@@ -1,0 +1,19 @@
+# 掛在 Thor 上、跟已在跑的 Dify (:3080) 與 Reachy (:9000) 並列。
+# 不要再起一套 Dify。
+services:
+  dify-dispatch:
+    container_name: dify-dispatch
+    image: python:3.12-slim
+    working_dir: /app
+    command: ["python", "-m", "dispatcher"]
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      DIFY_API_URL: ${DIFY_API_URL:-http://127.0.0.1:3080/v1}
+      DIFY_API_KEY: ${DIFY_API_KEY:-}
+      DIFY_USER: ${DIFY_USER:-hermes}
+      DISPATCH_BIND: ${DISPATCH_BIND:-0.0.0.0}
+      DISPATCH_PORT: ${DISPATCH_PORT:-8766}
+      DRY_RUN: ${DRY_RUN:-1}
+    volumes:
+      - ./:/app:ro

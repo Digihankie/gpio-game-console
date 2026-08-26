@@ -1,0 +1,120 @@
+version: "0.6.0"
+kind: app
+app:
+  name: Thor Fleet Dispatch
+  mode: advanced-chat
+  description: 薄殼 Chatflow。只輸出 {target,intent,confirm,say}，執行交給 Thor Hermes。
+  icon: "🦞"
+  icon_type: emoji
+  icon_background: "#FFEAD5"
+  use_icon_as_answer_icon: false
+workflow:
+  graph:
+    nodes:
+      - id: "start"
+        type: custom
+        position: { x: 80, y: 280 }
+        positionAbsolute: { x: 80, y: 280 }
+        width: 244
+        height: 90
+        data:
+          type: start
+          title: Start
+          desc: ""
+          variables: []
+      - id: "llm"
+        type: custom
+        position: { x: 380, y: 280 }
+        positionAbsolute: { x: 380, y: 280 }
+        width: 244
+        height: 198
+        data:
+          type: llm
+          title: 艦隊調度
+          desc: 只輸出 JSON
+          model:
+            provider: ""
+            name: ""
+            mode: chat
+            completion_params:
+              temperature: 0.2
+          prompt_template:
+            - role: system
+              text: |
+                你是 Thor 艦隊調度器。只輸出一個 JSON 物件，不要 markdown、不要解說。
+                {"target":"reachy|k10|m3|dogzilla","intent":"status|say|look|greet|demo|abort|display","confirm":false,"say":"一句繁體中文"}
+                規則：問候/揮手/跳舞/前進/走路 confirm=true；查狀態/說話/看/顯示/中止 confirm=false；abort 永遠 false。
+                沒有對應身體或 Crazyflie/起飛 → target=k10 intent=display，把原因寫進 say。
+                say 必填。
+            - role: user
+              text: "{{#sys.query#}}"
+          variables: []
+          context:
+            enabled: false
+            variable_selector: []
+          vision:
+            enabled: false
+          memory:
+            query_prompt_template: "{{#sys.query#}}"
+            window:
+              enabled: false
+              size: 10
+      - id: "answer"
+        type: custom
+        position: { x: 700, y: 280 }
+        positionAbsolute: { x: 700, y: 280 }
+        width: 244
+        height: 90
+        data:
+          type: answer
+          title: Answer
+          desc: ""
+          answer: "{{#llm.text#}}"
+          variables: []
+    edges:
+      - id: start-llm
+        source: "start"
+        sourceHandle: source
+        target: "llm"
+        targetHandle: target
+        type: custom
+        zIndex: 0
+        data:
+          sourceType: start
+          targetType: llm
+      - id: llm-answer
+        source: "llm"
+        sourceHandle: source
+        target: "answer"
+        targetHandle: target
+        type: custom
+        zIndex: 0
+        data:
+          sourceType: llm
+          targetType: answer
+    viewport:
+      x: 0
+      y: 0
+      zoom: 0.8
+  features:
+    file_upload:
+      enabled: false
+    opening_statement: "用一句話指揮艦隊。我會只回 JSON，真正動手的是 Thor Hermes。"
+    suggested_questions:
+      - "請 Reachy 說午安"
+      - "跟大家打招呼"
+      - "查 Reachy 狀態"
+    suggested_questions_after_answer:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    text_to_speech:
+      enabled: false
+    retriever_resource:
+      enabled: false
+    sensitive_word_avoidance:
+      enabled: false
+  environment_variables: []
+  conversation_variables: []
+  rag_pipeline_variables: []
+dependencies: []
