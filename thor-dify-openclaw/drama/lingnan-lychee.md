@@ -80,6 +80,8 @@ Dify 仍然只出這一包（聖旨）：
 - 驛馬傳的是**果子**，換騎換成 MCP。
 - 聖旨短，是因為課程要沾 Dify，不是因為唐朝公文變少。
 
+完整劇本、逐鏡時間軸、BGM／音效與真拍清單：[`screenplay-storyboard.md`](screenplay-storyboard.md)。
+
 試拍口令（Reachy 或 K10）：
 
 ```text
