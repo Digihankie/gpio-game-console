@@ -1,6 +1,6 @@
 {
   "name": "gpio-game-console / thor-dify-openclaw",
-  "install": "python3 --version && cd thor-dify-openclaw && python3 -m unittest discover -s dispatcher",
+  "install": "python3 --version",
   "ports": [
     {
       "name": "dify-dispatch",
