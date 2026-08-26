@@ -31,7 +31,7 @@ python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" --source k10
 | `status` | 要做的事 |
 |---|---|
 | `awaiting_confirm` | **機器狗先別動**。K10 顯示物品／地點／對象，A 才走。 |
-| `ready` | 依序執行 `calls`：`crazyflie_takeoff/look` → `nvidia_vlm_locate` → `crazyflie_land` → `dogzilla_goto/grasp/goto/release` → 回原助理播報。 |
+| `ready` | 第一趟只有 `dogzilla_*`。第二趟（scout+yolo）才是飛鴿 → 到點 → `yolo_confirm` → 夾。 |
 | `denied` / `expired` | 中止。 |
 
 `nvidia_vlm_locate` 打 Thor 已有的地端 VLM（狗的鏡頭或現場相機），不要另開雲端模型。

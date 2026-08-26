@@ -39,7 +39,8 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(dispatch.item, "紅色馬克杯")
         self.assertEqual(dispatch.dest, "會議室A")
         self.assertEqual(dispatch.recipient, "Hank")
-        self.assertEqual(dispatch.scout, "crazyflie")
+        self.assertEqual(dispatch.scout, "none")
+        self.assertEqual(dispatch.verify, "none")
 
     def test_incomplete_fetch_asks_again(self):
         dispatch = normalize_dispatch(
@@ -92,17 +93,58 @@ class NormalizeTests(unittest.TestCase):
             }
         )
         self.assertEqual(dispatch.scout, "none")
+        self.assertEqual(dispatch.verify, "none")
 
-
-class ExecutorTests(unittest.TestCase):
-    def test_fetch_uses_vlm_then_dog_then_announce(self):
+    def test_second_pass_enables_scout_and_yolo(self):
         dispatch = normalize_dispatch(
             {
                 "intent": "fetch",
-                "item": "水杯",
-                "dest": "客廳",
-                "recipient": "Hank",
-                "say": "機器狗去送水杯",
+                "item": "嶺南荔枝",
+                "dest": "沙發",
+                "recipient": "貴妃",
+                "scout": "crazyflie",
+                "verify": "yolo",
+                "say": "飛鴿先探，到點再認",
+            }
+        )
+        self.assertEqual(dispatch.scout, "crazyflie")
+        self.assertEqual(dispatch.verify, "yolo")
+
+
+class ExecutorTests(unittest.TestCase):
+    def test_first_pass_is_casual_horse_only(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "荔枝",
+                "dest": "長安",
+                "recipient": "貴妃",
+                "say": "快馬加鞭",
+            },
+            source="reachy",
+        )
+        tools = [call["tool"] for call in plan_calls(dispatch)]
+        self.assertEqual(
+            tools,
+            [
+                "dogzilla_goto",
+                "dogzilla_grasp",
+                "dogzilla_goto",
+                "dogzilla_release",
+                "reachy_speak",
+            ],
+        )
+
+    def test_second_pass_scouts_then_yolo_then_grasp(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "荔枝",
+                "dest": "長安",
+                "recipient": "貴妃",
+                "scout": "crazyflie",
+                "verify": "yolo",
+                "say": "先探再認",
             },
             source="reachy",
         )
@@ -115,6 +157,7 @@ class ExecutorTests(unittest.TestCase):
                 "nvidia_vlm_locate",
                 "crazyflie_land",
                 "dogzilla_goto",
+                "yolo_confirm",
                 "dogzilla_grasp",
                 "dogzilla_goto",
                 "dogzilla_release",
@@ -122,6 +165,7 @@ class ExecutorTests(unittest.TestCase):
             ],
         )
         self.assertEqual(plan_calls(dispatch)[2]["args"]["camera"], "crazyflie")
+        self.assertEqual(plan_calls(dispatch)[5]["args"]["blessed_by"], "reachy")
 
     def test_k10_ingress_announces_on_k10(self):
         dispatch = normalize_dispatch(

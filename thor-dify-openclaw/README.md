@@ -11,14 +11,10 @@ K10 語音（隨身）   ─┘
               Dify Chatflow（Start → LLM → Answer）
                     ↓  {item, dest, recipient, confirm, say}
               dispatcher :8766
-                    ↓ confirm=true → K10 按 A（先飛再夾）
-              Crazyflie 低空看一眼（空中眼，不送貨）
-                    ↓
-              Thor Nvidia VLM 看飛機／狗鏡頭
-                    ↓
-              Dogzilla：走到 → 夾 → 送到 → 放下
-                    ↓
-              Crazyflie 降落；回原助理播報
+                    ↓ 第一趟 scout=none：狗很快夾走——可能不是荔
+                    ↓ Reachy：此非荔枝
+                    ↓ 第二趟 飛鴿＋Lighthouse 定位，到點 YOLO 確認才夾
+                    ↓ 回原助理播報
 ```
 
 劇情皮膚（可選）：嶺南荔枝穿越現代。設定見 [`drama/lingnan-lychee.md`](drama/lingnan-lychee.md)，劇本分鏡見 [`drama/screenplay-storyboard.md`](drama/screenplay-storyboard.md)，花絮技術點見 [`drama/bts-tech.md`](drama/bts-tech.md)。

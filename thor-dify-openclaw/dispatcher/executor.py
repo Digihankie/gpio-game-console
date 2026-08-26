@@ -42,33 +42,42 @@ def _fetch_calls(dispatch: Dispatch) -> list[ToolCall]:
     announce = {"tool": "reachy_speak", "args": {"text": dispatch.say}}
     if dispatch.source == "k10":
         announce = {"tool": "k10_display", "args": {"text": dispatch.say}}
-    locate_camera = "dogzilla"
-    prefix: list[ToolCall] = []
+
+    calls: list[ToolCall] = []
     if dispatch.scout == "crazyflie":
-        locate_camera = "crazyflie"
-        prefix = [
-            {
-                "tool": "crazyflie_takeoff",
-                "args": {"height_m": 0.5, "localization": "lighthouse"},
-            },
-            {"tool": "crazyflie_look", "args": {"item": dispatch.item}},
-        ]
-    calls = prefix + [
-        {
-            "tool": "nvidia_vlm_locate",
-            "args": {"item": dispatch.item, "camera": locate_camera},
-        },
-    ]
+        calls.extend(
+            [
+                {
+                    "tool": "crazyflie_takeoff",
+                    "args": {"height_m": 0.5, "localization": "lighthouse"},
+                },
+                {"tool": "crazyflie_look", "args": {"item": dispatch.item}},
+                {
+                    "tool": "nvidia_vlm_locate",
+                    "args": {"item": dispatch.item, "camera": "crazyflie"},
+                },
+                {
+                    "tool": "crazyflie_land",
+                    "args": {"localization": "lighthouse", "pad": "lychee_box"},
+                },
+            ]
+        )
+
+    goto_place = dispatch.item
     if dispatch.scout == "crazyflie":
+        goto_place = "lighthouse_fix"
+    calls.append({"tool": "dogzilla_goto", "args": {"place": goto_place}})
+
+    if dispatch.verify == "yolo":
         calls.append(
             {
-                "tool": "crazyflie_land",
-                "args": {"localization": "lighthouse", "pad": "lychee_box"},
+                "tool": "yolo_confirm",
+                "args": {"item": dispatch.item, "camera": "dogzilla", "blessed_by": "reachy"},
             }
         )
+
     calls.extend(
         [
-            {"tool": "dogzilla_goto", "args": {"place": dispatch.item}},
             {"tool": "dogzilla_grasp", "args": {"item": dispatch.item}},
             {"tool": "dogzilla_goto", "args": {"place": dispatch.dest}},
             {"tool": "dogzilla_release", "args": {"recipient": dispatch.recipient}},

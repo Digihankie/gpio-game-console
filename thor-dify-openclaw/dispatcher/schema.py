@@ -32,6 +32,7 @@ class Dispatch:
     dest: str = ""
     recipient: str = ""
     scout: str = "none"
+    verify: str = "none"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -94,17 +95,21 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
                 say="請再說一次：要拿什麼、送到哪裡、給誰",
             )
         if scout not in SCOUTS:
-            scout = "crazyflie"
+            scout = "none"
+        verify = str(raw.get("verify", "")).strip().lower()
+        if verify not in ("none", "yolo"):
+            verify = "yolo" if scout == "crazyflie" else "none"
         return Dispatch(
             source=ingress,
             target="dogzilla",
             intent="fetch",
             confirm=True,
-            say=say or _fetch_say(item, dest, recipient, scout),
+            say=say or _fetch_say(item, dest, recipient, scout, verify),
             item=item,
             dest=dest,
             recipient=recipient,
             scout=scout,
+            verify=verify,
         )
 
     if intent == "abort":
@@ -134,6 +139,7 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
         dest=dest,
         recipient=recipient,
         scout="none",
+        verify="none",
     )
 
 
@@ -142,10 +148,12 @@ def looks_like_air_delivery(query: str) -> bool:
     return any(hint in q for hint in AIR_DELIVERY_HINTS)
 
 
-def _fetch_say(item: str, dest: str, recipient: str, scout: str) -> str:
+def _fetch_say(item: str, dest: str, recipient: str, scout: str, verify: str) -> str:
+    if scout == "crazyflie" and verify == "yolo":
+        return f"飛鴿先探{item}，驛馬到點後以 YOLO 確認，再送到{dest}給{recipient}"
     if scout == "crazyflie":
         return f"小飛機先看{item}在哪，再讓機器狗送到{dest}給{recipient}"
-    return f"機器狗去把{item}送到{dest}給{recipient}"
+    return f"驛馬快去把{item}送到{dest}給{recipient}"
 
 
 def _as_bool(value: Any) -> bool:
