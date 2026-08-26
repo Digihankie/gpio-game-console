@@ -21,7 +21,7 @@ K10 語音（隨身）   ─┘
               Crazyflie 降落；回原助理播報
 ```
 
-劇情皮膚（可選）：嶺南荔枝穿越現代。設定見 [`drama/lingnan-lychee.md`](drama/lingnan-lychee.md)，完整劇本與分鏡見 [`drama/screenplay-storyboard.md`](drama/screenplay-storyboard.md)。
+劇情皮膚（可選）：嶺南荔枝穿越現代。設定見 [`drama/lingnan-lychee.md`](drama/lingnan-lychee.md)，劇本分鏡見 [`drama/screenplay-storyboard.md`](drama/screenplay-storyboard.md)，花絮技術點見 [`drama/bts-tech.md`](drama/bts-tech.md)。
 
 不要再裝第二套 Dify，也不要再載一份大模型。Chatflow 選 Thor 現有 Nvidia endpoint。
 
@@ -75,7 +75,7 @@ python3 scripts/send_voice.py --source k10 "把遙控器送到沙發給媽媽"
 Hermes 現場路徑：`reachy_listen` 得到文字後跑 `ask_dify.py --source reachy "..."`。  
 K10 板上 ASR 弱，正式是把短語交給 Thor ASR，再 `POST /voice {"source":"k10","text":"..."}`。
 
-`DRY_RUN=1`（預設）只規劃 `calls`。Crazyflie 走 Thor 的 Crazyradio + `cflib`（不是 K10）；沒電台時 Dify 填 `scout=none`。`dogzilla_*` 對 Thor `fleet/dogzilla_mcp`。還沒接 MCP 時仍看得到步驟，不會真的飛或放狗。
+`DRY_RUN=1`（預設）只規劃 `calls`。Crazyflie 走 Thor 的 Crazyradio + `cflib` + **兩座 Lighthouse 燈塔**（精準降落，不是 K10）；沒電台時 Dify 填 `scout=none`。`dogzilla_*` 對 Thor `fleet/dogzilla_mcp`。還沒接 MCP 時仍看得到步驟，不會真的飛或放狗。
 
 ## 本機測驗
 

@@ -9,7 +9,7 @@
 
 | 劇中 | 現場誰演 | 只做什麼 | 不做什麼 |
 |---|---|---|---|
-| 飛鴿傳書 | Crazyflie | 低空看荔枝在哪，傳回「枝頭有果」 | 不叼荔枝、不空投 |
+| 飛鴿傳書 | Crazyflie＋**兩座 Lighthouse 燈塔** | 低空看荔枝在哪，按座標落在盒邊 | 不叼荔枝、不空投、不目測落地 |
 | 快馬加鞭的驛馬 | Dogzilla | 夾起荔枝盒，送到人面前 | 不飛、不宣旨 |
 | 宮門掌事（現地） | Reachy | 聽聖旨、報「荔枝到了」 | 不夾、不跑腿 |
 | 捧旨小黃門（隨身） | K10 | 螢幕出示聖旨，A 準奏／B 駁回 | 不當驛馬 |
@@ -80,7 +80,8 @@ Dify 仍然只出這一包（聖旨）：
 - 驛馬傳的是**果子**，換騎換成 MCP。
 - 聖旨短，是因為課程要沾 Dify，不是因為唐朝公文變少。
 
-完整劇本、逐鏡時間軸、BGM／音效與真拍清單：[`screenplay-storyboard.md`](screenplay-storyboard.md)。
+完整劇本、逐鏡時間軸、BGM／音效與真拍清單：[`screenplay-storyboard.md`](screenplay-storyboard.md)。  
+幕後花絮與技術對位（JetPack 7、YOLO、四麥、MQTT、K10 人臉與荔枝物候）：[`bts-tech.md`](bts-tech.md)。
 
 試拍口令（Reachy 或 K10）：
 

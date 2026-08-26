@@ -13,7 +13,9 @@ def plan_calls(dispatch: Dispatch) -> list[ToolCall]:
     if dispatch.intent == "fetch":
         return _fetch_calls(dispatch)
     if dispatch.intent == "abort":
-        calls: list[ToolCall] = [{"tool": "crazyflie_land", "args": {}}]
+        calls: list[ToolCall] = [
+            {"tool": "crazyflie_land", "args": {"localization": "lighthouse"}}
+        ]
         if dispatch.target == "dogzilla":
             calls.append({"tool": "dogzilla_stop", "args": {}})
             return calls
@@ -45,7 +47,10 @@ def _fetch_calls(dispatch: Dispatch) -> list[ToolCall]:
     if dispatch.scout == "crazyflie":
         locate_camera = "crazyflie"
         prefix = [
-            {"tool": "crazyflie_takeoff", "args": {"height_m": 0.5}},
+            {
+                "tool": "crazyflie_takeoff",
+                "args": {"height_m": 0.5, "localization": "lighthouse"},
+            },
             {"tool": "crazyflie_look", "args": {"item": dispatch.item}},
         ]
     calls = prefix + [
@@ -55,7 +60,12 @@ def _fetch_calls(dispatch: Dispatch) -> list[ToolCall]:
         },
     ]
     if dispatch.scout == "crazyflie":
-        calls.append({"tool": "crazyflie_land", "args": {}})
+        calls.append(
+            {
+                "tool": "crazyflie_land",
+                "args": {"localization": "lighthouse", "pad": "lychee_box"},
+            }
+        )
     calls.extend(
         [
             {"tool": "dogzilla_goto", "args": {"place": dispatch.item}},

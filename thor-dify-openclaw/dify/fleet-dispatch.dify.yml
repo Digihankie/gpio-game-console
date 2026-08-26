@@ -104,6 +104,7 @@ workflow:
       enabled: false
     opening_statement: "跟現地 Reachy 或隨身 K10 說：拿什麼、送到哪、給誰。我只回 JSON。"
     suggested_questions:
+      - "把那盒嶺南荔枝送到沙發給貴妃"
       - "把桌上的紅色馬克杯拿到客廳茶几給 Hank"
       - "機器狗停下來"
       - "把遙控器送到沙發給媽媽"
