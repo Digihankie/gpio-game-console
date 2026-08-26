@@ -33,8 +33,9 @@ class ServiceTests(unittest.TestCase):
 
         approved = service.confirm(result["pending"]["id"], True)
         self.assertEqual(approved["status"], "ready")
-        self.assertEqual(approved["calls"][0]["tool"], "nvidia_vlm_locate")
-        self.assertEqual(approved["calls"][2]["tool"], "dogzilla_grasp")
+        self.assertEqual(approved["calls"][0]["tool"], "crazyflie_takeoff")
+        self.assertEqual(approved["calls"][2]["tool"], "nvidia_vlm_locate")
+        self.assertEqual(approved["calls"][5]["tool"], "dogzilla_grasp")
 
     def test_reachy_say_is_ready(self):
         planner = FakePlanner(
@@ -45,13 +46,13 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(result["status"], "ready")
         self.assertEqual(result["calls"][0]["tool"], "reachy_speak")
 
-    def test_crazyflie_blocked_without_dify(self):
-        planner = FakePlanner("should not be called")
+    def test_fetch_keeps_crazyflie_as_scout(self):
+        planner = FakePlanner(FETCH_JSON)
         service = DispatchService(planner=planner, store=PendingStore(), dry_run=True)
-        result = service.plan_query("Crazyflie 起飛", source="k10")
-        self.assertEqual(result["status"], "ready")
-        self.assertEqual(result["dispatch"]["intent"], "display")
-        self.assertEqual(planner.queries, [])
+        result = service.plan_voice("reachy", "先讓小飛機看一下再拿馬克杯給 Hank")
+        self.assertEqual(result["status"], "awaiting_confirm")
+        self.assertEqual(result["pending"]["dispatch"]["scout"], "crazyflie")
+        self.assertEqual(result["pending"]["calls"][0]["tool"], "crazyflie_takeoff")
 
     def test_empty_query(self):
         service = DispatchService(planner=FakePlanner("{}"), dry_run=True)

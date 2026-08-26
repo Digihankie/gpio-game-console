@@ -10,7 +10,6 @@ from .schema import (
     Dispatch,
     DispatchError,
     extract_json_object,
-    looks_like_unsupported_aircraft,
     normalize_dispatch,
     normalize_source,
 )
@@ -38,6 +37,7 @@ class DispatchService:
             "dry_run": self.dry_run,
             "role": "dify-fetch-bridge",
             "ingress": ["reachy", "k10"],
+            "eye": "crazyflie",
             "body": "dogzilla",
         }
 
@@ -46,15 +46,6 @@ class DispatchService:
         source = normalize_source(source)
         if not query:
             raise DispatchError("query is required")
-        if looks_like_unsupported_aircraft(query):
-            dispatch = Dispatch(
-                source=source,
-                target="k10",
-                intent="display",
-                confirm=False,
-                say="Crazyflie 尚未接入，這次只調度機器狗夾送",
-            )
-            return self._ready(dispatch, planner_source="policy")
 
         prompt = f"[助理={source}] {query}"
         answer = self.planner.chat(prompt)

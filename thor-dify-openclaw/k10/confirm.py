@@ -42,7 +42,7 @@ def show_pending(item):
     rgb.write(num=1, R=255, G=160, B=0)
     paint(
         [
-            "機器狗取物",
+            "先飛再夾" if dispatch.get("scout") == "crazyflie" else "機器狗取物",
             "拿 " + dispatch.get("item", "?"),
             "到 " + dispatch.get("dest", "?"),
             "給 " + dispatch.get("recipient", "?"),

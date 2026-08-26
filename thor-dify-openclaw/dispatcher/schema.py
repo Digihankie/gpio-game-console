@@ -10,7 +10,9 @@ from typing import Any
 SOURCES = ("reachy", "k10")
 TARGETS = ("dogzilla", "reachy", "k10")
 INTENTS = ("fetch", "abort", "status", "say", "display")
-REJECTED_KEYWORDS = ("crazyflie", "crazyradio", "cflib")
+SCOUTS = ("crazyflie", "none")
+# 飛機只准當眼睛。把「用飛機送東西」講成要夾送時，仍走狗，scout 開著。
+AIR_DELIVERY_HINTS = ("用飛機送", "飛過去拿", "空投", "drone delivery")
 
 _FENCE_RE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL | re.IGNORECASE)
 
@@ -29,6 +31,7 @@ class Dispatch:
     item: str = ""
     dest: str = ""
     recipient: str = ""
+    scout: str = "none"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -76,6 +79,7 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
     dest = str(raw.get("dest") or raw.get("destination") or "").strip()
     recipient = str(raw.get("recipient") or raw.get("give_to") or "").strip()
     confirm = _as_bool(raw.get("confirm", False))
+    scout = str(raw.get("scout", "")).strip().lower()
 
     if intent not in INTENTS:
         raise DispatchError(f"unknown intent: {intent or '(empty)'}")
@@ -89,15 +93,18 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
                 confirm=False,
                 say="請再說一次：要拿什麼、送到哪裡、給誰",
             )
+        if scout not in SCOUTS:
+            scout = "crazyflie"
         return Dispatch(
             source=ingress,
             target="dogzilla",
             intent="fetch",
             confirm=True,
-            say=say or f"機器狗去把{item}送到{dest}給{recipient}",
+            say=say or _fetch_say(item, dest, recipient, scout),
             item=item,
             dest=dest,
             recipient=recipient,
+            scout=scout,
         )
 
     if intent == "abort":
@@ -109,6 +116,7 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
             intent="abort",
             confirm=False,
             say=say or "停止目前任務",
+            scout="crazyflie",
         )
 
     if target not in TARGETS:
@@ -125,12 +133,19 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
         item=item,
         dest=dest,
         recipient=recipient,
+        scout="none",
     )
 
 
-def looks_like_unsupported_aircraft(query: str) -> bool:
-    q = (query or "").lower()
-    return any(word in q for word in REJECTED_KEYWORDS)
+def looks_like_air_delivery(query: str) -> bool:
+    q = query or ""
+    return any(hint in q for hint in AIR_DELIVERY_HINTS)
+
+
+def _fetch_say(item: str, dest: str, recipient: str, scout: str) -> str:
+    if scout == "crazyflie":
+        return f"小飛機先看{item}在哪，再讓機器狗送到{dest}給{recipient}"
+    return f"機器狗去把{item}送到{dest}給{recipient}"
 
 
 def _as_bool(value: Any) -> bool:

@@ -1,7 +1,7 @@
 import unittest
 
 from dispatcher.executor import plan_calls
-from dispatcher.schema import DispatchError, extract_json_object, looks_like_unsupported_aircraft, normalize_dispatch
+from dispatcher.schema import DispatchError, extract_json_object, looks_like_air_delivery, normalize_dispatch
 
 
 class ExtractJsonTests(unittest.TestCase):
@@ -39,6 +39,7 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(dispatch.item, "紅色馬克杯")
         self.assertEqual(dispatch.dest, "會議室A")
         self.assertEqual(dispatch.recipient, "Hank")
+        self.assertEqual(dispatch.scout, "crazyflie")
 
     def test_incomplete_fetch_asks_again(self):
         dispatch = normalize_dispatch(
@@ -75,9 +76,22 @@ class NormalizeTests(unittest.TestCase):
         with self.assertRaises(DispatchError):
             normalize_dispatch({"intent": "dance", "say": "x"})
 
-    def test_crazyflie_query_detected(self):
-        self.assertTrue(looks_like_unsupported_aircraft("讓 Crazyflie 起飛"))
-        self.assertFalse(looks_like_unsupported_aircraft("機器狗去拿杯子"))
+    def test_air_delivery_is_not_a_fetch_body(self):
+        self.assertTrue(looks_like_air_delivery("用飛機送馬克杯"))
+        self.assertFalse(looks_like_air_delivery("小飛機先看一下再讓狗去拿"))
+
+    def test_explicit_no_scout(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "杯子",
+                "dest": "客廳",
+                "recipient": "Hank",
+                "scout": "none",
+                "say": "直接放狗",
+            }
+        )
+        self.assertEqual(dispatch.scout, "none")
 
 
 class ExecutorTests(unittest.TestCase):
@@ -96,7 +110,10 @@ class ExecutorTests(unittest.TestCase):
         self.assertEqual(
             tools,
             [
+                "crazyflie_takeoff",
+                "crazyflie_look",
                 "nvidia_vlm_locate",
+                "crazyflie_land",
                 "dogzilla_goto",
                 "dogzilla_grasp",
                 "dogzilla_goto",
@@ -104,6 +121,7 @@ class ExecutorTests(unittest.TestCase):
                 "reachy_speak",
             ],
         )
+        self.assertEqual(plan_calls(dispatch)[2]["args"]["camera"], "crazyflie")
 
     def test_k10_ingress_announces_on_k10(self):
         dispatch = normalize_dispatch(

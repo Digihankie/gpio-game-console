@@ -11,12 +11,14 @@ K10 語音（隨身）   ─┘
               Dify Chatflow（Start → LLM → Answer）
                     ↓  {item, dest, recipient, confirm, say}
               dispatcher :8766
-                    ↓ confirm=true → K10 按 A
-              Nvidia VLM 在狗鏡頭上找物品
+                    ↓ confirm=true → K10 按 A（先飛再夾）
+              Crazyflie 低空看一眼（空中眼，不送貨）
+                    ↓
+              Thor Nvidia VLM 看飛機／狗鏡頭
                     ↓
               Dogzilla：走到 → 夾 → 送到 → 放下
                     ↓
-              回原助理播報（Reachy 說 / K10 顯示）
+              Crazyflie 降落；回原助理播報
 ```
 
 不要再裝第二套 Dify，也不要再載一份大模型。Chatflow 選 Thor 現有 Nvidia endpoint。
@@ -35,12 +37,13 @@ K10 語音（隨身）   ─┘
   "item": "紅色馬克杯",
   "dest": "客廳茶几",
   "recipient": "Hank",
+  "scout": "crazyflie",
   "confirm": true,
-  "say": "機器狗去把紅色馬克杯送到客廳給 Hank"
+  "say": "小飛機先看馬克杯在哪，再讓機器狗送到客廳給 Hank"
 }
 ```
 
-`fetch` 一律 `target=dogzilla` 且必須等 K10 A。缺欄位就請人再說一次，不會放狗。
+`fetch` 一律 `target=dogzilla`，預設 `scout=crazyflie`，且必須等 K10 A。飛機只負責看，不能夾、不能空投。缺欄位就請人再說一次，不會放狗也不會起飛。
 
 ## 目錄
 
@@ -70,7 +73,7 @@ python3 scripts/send_voice.py --source k10 "把遙控器送到沙發給媽媽"
 Hermes 現場路徑：`reachy_listen` 得到文字後跑 `ask_dify.py --source reachy "..."`。  
 K10 板上 ASR 弱，正式是把短語交給 Thor ASR，再 `POST /voice {"source":"k10","text":"..."}`。
 
-`DRY_RUN=1`（預設）只規劃 `calls`。`dogzilla_*` 對 Thor `/home/hank/docker/fleet/dogzilla_mcp`；還沒接進 Hermes 時，核准後仍看得到完整步驟，不會真的放狗。
+`DRY_RUN=1`（預設）只規劃 `calls`。Crazyflie 走 Thor 的 Crazyradio + `cflib`（不是 K10）；沒電台時 Dify 填 `scout=none`。`dogzilla_*` 對 Thor `fleet/dogzilla_mcp`。還沒接 MCP 時仍看得到步驟，不會真的飛或放狗。
 
 ## 本機測驗
 

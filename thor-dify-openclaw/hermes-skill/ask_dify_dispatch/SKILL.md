@@ -6,7 +6,7 @@ description: 把 Reachy 或 K10 聽到的取物指令交給 Dify 一小段 Chatf
 # Ask Dify Dispatch（取物）
 
 Reachy = 現地個人助理，K10 = 隨身個人助理。兩者都只做**語音入口**。  
-Dify 只做**一小段規劃**。夾、走、放是 **Dogzilla + Thor Nvidia VLM**。
+Dify 只做**一小段規劃**。眼睛是 **Crazyflie**（先看），手是 **Dogzilla**（再夾）。Thor Nvidia VLM 讀飛機或狗的鏡頭。
 
 聽到「拿／夾／送／給誰」時先跑這個 skill，不要自己猜路點。
 
@@ -31,7 +31,7 @@ python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" --source k10
 | `status` | 要做的事 |
 |---|---|
 | `awaiting_confirm` | **機器狗先別動**。K10 顯示物品／地點／對象，A 才走。 |
-| `ready` | 依序執行 `calls`：`nvidia_vlm_locate` → `dogzilla_goto` → `dogzilla_grasp` → `dogzilla_goto` → `dogzilla_release` → 回原助理播報。 |
+| `ready` | 依序執行 `calls`：`crazyflie_takeoff/look` → `nvidia_vlm_locate` → `crazyflie_land` → `dogzilla_goto/grasp/goto/release` → 回原助理播報。 |
 | `denied` / `expired` | 中止。 |
 
 `nvidia_vlm_locate` 打 Thor 已有的地端 VLM（狗的鏡頭或現場相機），不要另開雲端模型。
@@ -40,4 +40,4 @@ python3 "$HERMES_HOME/skills/ask_dify_dispatch/scripts/ask_dify.py" --source k10
 
 - 不要讓 Reachy 或 K10 去夾東西。
 - 不要為 Dify 再載一份 LLM；Chatflow 共用 Thor Nvidia endpoint。
-- 不要接 Crazyflie。
+- Crazyflie 只 scout，不要拿它送貨；沒有 Crazyradio 時 `scout=none`。

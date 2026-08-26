@@ -52,6 +52,7 @@ class HttpTests(unittest.TestCase):
         self.assertTrue(body["ok"])
         self.assertEqual(body["role"], "dify-fetch-bridge")
         self.assertEqual(body["body"], "dogzilla")
+        self.assertEqual(body["eye"], "crazyflie")
 
     def test_plan_and_pending(self):
         status, body = self._json("POST", "/voice", {"source": "reachy", "text": "午安"})
