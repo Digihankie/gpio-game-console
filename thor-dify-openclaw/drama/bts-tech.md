@@ -1,7 +1,7 @@
 # 幕後花絮：技術含金量怎麼講、怎麼拍
 
-正片 2:42 先讓快馬夾回龍眼，貴妃念完《過華清宮》，再讓飛鴿與 YOLO 改正。  
-花絮把**為什麼第一趟會錯、第二趟才準**講完。唐朝換的是馬，我們換的是 **Jetson 上的感知與調度**。
+正片 2:42 先讓一只假飛鴿急報把快馬騙去夾龍眼，貴妃念完《過華清宮》，再讓真飛鴿與 YOLO 改正。  
+花絮把**為什麼第一趟會錯、第二趟才準**講完：急報是未核驗情報，龍眼是仿冒物。唐朝換的是馬，我們換的是 **Jetson 上的感知與調度**。
 
 K10 不跑大模型。它是隨身探子與準奏板；腦子在 **NVIDIA Jetson AGX Thor + JetPack 7**。
 
@@ -13,6 +13,7 @@ K10 不跑大模型。它是隨身探子與準奏板；腦子在 **NVIDIA Jetson
 |---|---|---|---|
 | 驛丞的算盤 | JetPack 7、CUDA、TensorRT、本機 LLM／VLM | Thor | 機櫃燈、`nvidia-smi`／jtop 一閃 |
 | 聖旨三欄 | Dify Chatflow（Start→LLM→Answer） | Thor `:3080` | 螢幕只出 item／dest／recipient |
+| 假急報 | `intel=hearsay`；K10 黃字急報 | K10／道具帖 | 與第二趟綠字核驗對切，不拍真實郵件 |
 | 驛站總管 | Hermes／OpenClaw＋MCP | Thor | 終端出現 `calls[]` |
 | 宮門聽旨 | 4 Mic 陣列＋DOA＋STT | Reachy→Thor | 人說話，頭轉向聲源 |
 | 掌事宣旨 | TTS（Azure／Kokoro／Riva） | Reachy | 「荔枝到了。」波形 |

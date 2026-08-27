@@ -11,6 +11,7 @@ SOURCES = ("reachy", "k10")
 TARGETS = ("dogzilla", "reachy", "k10")
 INTENTS = ("fetch", "abort", "status", "say", "display")
 SCOUTS = ("crazyflie", "none")
+INTELS = ("hearsay", "verified")
 # 飛機只准當眼睛。把「用飛機送東西」講成要夾送時，仍走狗，scout 開著。
 AIR_DELIVERY_HINTS = ("用飛機送", "飛過去拿", "空投", "drone delivery")
 
@@ -33,6 +34,7 @@ class Dispatch:
     recipient: str = ""
     scout: str = "none"
     verify: str = "none"
+    intel: str = "hearsay"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -99,17 +101,21 @@ def normalize_dispatch(raw: dict[str, Any], source: str | None = None) -> Dispat
         verify = str(raw.get("verify", "")).strip().lower()
         if verify not in ("none", "yolo"):
             verify = "yolo" if scout == "crazyflie" else "none"
+        intel = str(raw.get("intel", "")).strip().lower()
+        if intel not in INTELS:
+            intel = "verified" if scout == "crazyflie" else "hearsay"
         return Dispatch(
             source=ingress,
             target="dogzilla",
             intent="fetch",
             confirm=True,
-            say=say or _fetch_say(item, dest, recipient, scout, verify),
+            say=say or _fetch_say(item, dest, recipient, scout, verify, intel),
             item=item,
             dest=dest,
             recipient=recipient,
             scout=scout,
             verify=verify,
+            intel=intel,
         )
 
     if intent == "abort":
@@ -148,11 +154,15 @@ def looks_like_air_delivery(query: str) -> bool:
     return any(hint in q for hint in AIR_DELIVERY_HINTS)
 
 
-def _fetch_say(item: str, dest: str, recipient: str, scout: str, verify: str) -> str:
+def _fetch_say(
+    item: str, dest: str, recipient: str, scout: str, verify: str, intel: str = "hearsay"
+) -> str:
     if scout == "crazyflie" and verify == "yolo":
-        return f"飛鴿先探{item}，驛馬到點後以 YOLO 確認，再送到{dest}給{recipient}"
+        return f"核驗急報，飛鴿先探{item}，驛馬到點後以 YOLO 確認，再送到{dest}給{recipient}"
     if scout == "crazyflie":
         return f"小飛機先看{item}在哪，再讓機器狗送到{dest}給{recipient}"
+    if intel == "hearsay":
+        return f"急報稱近盒即荔，驛馬快去把{item}送到{dest}給{recipient}"
     return f"驛馬快去把{item}送到{dest}給{recipient}"
 
 

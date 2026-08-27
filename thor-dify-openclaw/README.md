@@ -11,9 +11,9 @@ K10 語音（隨身）   ─┘
               Dify Chatflow（Start → LLM → Answer）
                     ↓  {item, dest, recipient, confirm, say}
               dispatcher :8766
-                    ↓ 第一趟 scout=none：狗很快夾走——可能不是荔
-                    ↓ Reachy：此非荔枝
-                    ↓ 第二趟 飛鴿＋Lighthouse 定位，到點 YOLO 確認才夾
+                    ↓ 第一趟 intel=hearsay：照抄假急報，狗很快夾走——可能是龍眼
+                    ↓ Reachy：此帖不實
+                    ↓ 第二趟 intel=verified，飛鴿＋Lighthouse 定位，到點 YOLO 確認才夾
                     ↓ 回原助理播報
 ```
 

@@ -38,18 +38,36 @@ def show_idle():
 
 def show_pending(item):
     dispatch = item.get("dispatch") or {}
+    verified = dispatch.get("intel") == "verified" or dispatch.get("scout") == "crazyflie"
+    if verified:
+        rgb.write(num=0, R=40, G=200, B=120)
+        rgb.write(num=1, R=40, G=200, B=120)
+        paint(
+            [
+                "核驗聖旨",
+                "先飛再認",
+                "拿 " + dispatch.get("item", "?"),
+                "到 " + dispatch.get("dest", "?"),
+                "給 " + dispatch.get("recipient", "?"),
+                "A 核驗後準",
+                "B 駁回",
+            ],
+            0xAAFFCC,
+        )
+        return
     rgb.write(num=0, R=255, G=160, B=0)
-    rgb.write(num=1, R=255, G=160, B=0)
+    rgb.write(num=1, R=255, G=40, B=0)
     paint(
         [
-            "先飛再夾" if dispatch.get("scout") == "crazyflie" else "機器狗取物",
+            "嶺南急報",
+            "近盒即荔",
             "拿 " + dispatch.get("item", "?"),
-            "到 " + dispatch.get("dest", "?"),
+            "速送 " + dispatch.get("dest", "?"),
             "給 " + dispatch.get("recipient", "?"),
-            "A 出發",
-            "B 取消",
+            "A 立刻準奏",
+            "B 駁回",
         ],
-        0xFFFF66,
+        0xFFCC44,
     )
 
 

@@ -42,8 +42,8 @@ workflow:
             - role: system
               text: |
                 你是 Thor 的取物規劃器。只輸出一個 JSON 物件，不要 markdown、不要解說。
-                fetch 第一趟（快馬）：{"intent":"fetch","item":"物品","dest":"位置","recipient":"交給誰","scout":"none","verify":"none","confirm":true,"say":"一句繁中"}
-                第二趟（此非荔枝／先探／認清楚）：scout=crazyflie、verify=yolo。飛鴿＋燈塔定位，到點 YOLO 才夾。
+                fetch 第一趟（急報／快馬）：{"intent":"fetch","item":"物品","dest":"位置","recipient":"交給誰","scout":"none","verify":"none","intel":"hearsay","confirm":true,"say":"一句繁中"}
+                第二趟（此帖不實／假消息／先探／認清楚）：scout=crazyflie、verify=yolo、intel=verified。真飛鴿＋燈塔定位，到點 YOLO 才夾。
                 Crazyflie 只當空中眼，不能夾不能送。
                 缺 item/dest/recipient → {"intent":"display","target":"k10","say":"請再說一次要拿什麼、送到哪、給誰"}
                 取消 → {"intent":"abort","target":"dogzilla","confirm":false,"say":"停飛並停下機器狗"}

@@ -41,6 +41,7 @@ class NormalizeTests(unittest.TestCase):
         self.assertEqual(dispatch.recipient, "Hank")
         self.assertEqual(dispatch.scout, "none")
         self.assertEqual(dispatch.verify, "none")
+        self.assertEqual(dispatch.intel, "hearsay")
 
     def test_incomplete_fetch_asks_again(self):
         dispatch = normalize_dispatch(
@@ -94,6 +95,19 @@ class NormalizeTests(unittest.TestCase):
         )
         self.assertEqual(dispatch.scout, "none")
         self.assertEqual(dispatch.verify, "none")
+        self.assertEqual(dispatch.intel, "hearsay")
+
+    def test_missing_say_uses_hearsay_line(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "嶺南荔枝",
+                "dest": "沙發",
+                "recipient": "貴妃",
+                "scout": "none",
+            }
+        )
+        self.assertIn("急報", dispatch.say)
 
     def test_second_pass_enables_scout_and_yolo(self):
         dispatch = normalize_dispatch(
@@ -109,6 +123,23 @@ class NormalizeTests(unittest.TestCase):
         )
         self.assertEqual(dispatch.scout, "crazyflie")
         self.assertEqual(dispatch.verify, "yolo")
+        self.assertEqual(dispatch.intel, "verified")
+
+    def test_hearsay_intel_stays_casual(self):
+        dispatch = normalize_dispatch(
+            {
+                "intent": "fetch",
+                "item": "嶺南荔枝",
+                "dest": "沙發",
+                "recipient": "貴妃",
+                "scout": "none",
+                "verify": "none",
+                "intel": "hearsay",
+                "say": "急報稱近盒即荔",
+            }
+        )
+        self.assertEqual(dispatch.intel, "hearsay")
+        self.assertEqual(dispatch.scout, "none")
 
 
 class ExecutorTests(unittest.TestCase):
