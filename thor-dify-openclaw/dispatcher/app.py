@@ -1,4 +1,4 @@
-"""Stdlib HTTP front for the Dify ↔ Hermes dispatch bridge."""
+"""Stdlib HTTP front for the Dify fetch-planner dispatch bridge."""
 
 from __future__ import annotations
 

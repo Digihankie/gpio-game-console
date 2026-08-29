@@ -50,9 +50,9 @@ K10 語音（隨身）   ─┘
 | `dify/fleet-dispatch.dify.yml` | 匯入 Thor Dify 的取物 Chatflow |
 | `dify/SYSTEM.md` | 同一份 System Prompt |
 | `dispatcher/` | `/voice` 入口、確認閘、VLM + 狗的 call 對照 |
-| `hermes-skill/ask_dify_dispatch/` | Reachy / Hermes 聽到後呼叫 |
 | `k10/confirm.py` | 隨身助理：顯示拿／到／給，A 出發 |
 | `scripts/send_voice.py` | 本機模擬兩種助理的語音文字 |
+| `scripts/ask_dify.py` | 把一句話 POST 到 dispatcher `/voice` |
 
 ## 在 Thor 上接
 
@@ -62,13 +62,12 @@ cd thor-dify-openclaw
 # 開 :3080 匯入 DSL，LLM 選 Thor 地端模型，複製 API Key
 cp .env.example .env
 docker compose up -d
-docker restart hermes-agent
 
 python3 scripts/send_voice.py --source reachy "把桌上的紅色馬克杯拿到客廳茶几給 Hank"
 python3 scripts/send_voice.py --source k10 "把遙控器送到沙發給媽媽"
 ```
 
-Hermes 現場路徑：`reachy_listen` 得到文字後跑 `ask_dify.py --source reachy "..."`。  
+Reachy 現場：本地 ASR 得到文字後跑 `scripts/ask_dify.py --source reachy "..."`。  
 K10 板上 ASR 弱，正式是把短語交給 Thor ASR，再 `POST /voice {"source":"k10","text":"..."}`。
 
 `DRY_RUN=1`（預設）只規劃 `calls`。Crazyflie 走 Thor 的 Crazyradio + `cflib` + **兩座 Lighthouse 燈塔**（精準降落，不是 K10）；沒電台時 Dify 填 `scout=none`。`dogzilla_*` 對 Thor `fleet/dogzilla_mcp`。還沒接 MCP 時仍看得到步驟，不會真的飛或放狗。

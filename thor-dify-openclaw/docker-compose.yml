@@ -11,7 +11,7 @@ services:
     environment:
       DIFY_API_URL: ${DIFY_API_URL:-http://127.0.0.1:3080/v1}
       DIFY_API_KEY: ${DIFY_API_KEY:-}
-      DIFY_USER: ${DIFY_USER:-hermes}
+      DIFY_USER: ${DIFY_USER:-dify}
       DISPATCH_BIND: ${DISPATCH_BIND:-0.0.0.0}
       DISPATCH_PORT: ${DISPATCH_PORT:-8766}
       DRY_RUN: ${DRY_RUN:-1}

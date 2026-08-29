@@ -2,7 +2,7 @@
 
 三個節點：`Start → LLM → Answer`。不要 Code、不要 Agent、不要第二個模型。
 
-LLM 用 Thor 已有的 Nvidia 地端 endpoint（和 Hermes 同一份）。
+LLM 用 Thor 已有的 Nvidia 地端 endpoint（不要另載一份大模型）。
 
 ## System Prompt
 

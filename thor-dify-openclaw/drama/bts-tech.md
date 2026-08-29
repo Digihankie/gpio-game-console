@@ -14,7 +14,7 @@ K10 不跑大模型。它是隨身探子與準奏板；腦子在 **NVIDIA Jetson
 | 驛丞的算盤 | JetPack 7、CUDA、TensorRT、本機 LLM／VLM | Thor | 機櫃燈、`nvidia-smi`／jtop 一閃 |
 | 聖旨三欄 | Dify Chatflow（Start→LLM→Answer） | Thor `:3080` | 螢幕只出 item／dest／recipient |
 | 假急報 | `intel=hearsay`；K10 黃字急報 | K10／道具帖 | 與第二趟綠字核驗對切，不拍真實郵件 |
-| 驛站總管 | Hermes／OpenClaw＋MCP | Thor | 終端出現 `calls[]` |
+| 驛站總管 | dispatcher：規劃 `calls[]` | Thor `:8766` | 終端出現取物步驟 |
 | 宮門聽旨 | 4 Mic 陣列＋DOA＋STT | Reachy→Thor | 人說話，頭轉向聲源 |
 | 掌事宣旨 | TTS（Azure／Kokoro／Riva） | Reachy | 「荔枝到了。」波形 |
 | 認人 | YOLO＋臉部（Thor）；K10 板載人臉 | Thor／K10 | 框出人；K10 顯示 face id |
@@ -74,7 +74,7 @@ K10 不跑大模型。它是隨身探子與準奏板；腦子在 **NVIDIA Jetson
    花絮捲過：`crazyflie_look` → `nvidia_vlm_locate` → `dogzilla_grasp`。聖旨短，驛卒步驟長。
 
 11. **Docker Compose 分域**  
-    Dify、Hermes、fleet、ComfyUI 各是容器。花絮一眼 `docker compose ls`，講「驛館分曹，不共一廚」。
+    Dify、dispatcher、fleet、ComfyUI 各是容器。花絮一眼 `docker compose ls`，講「驛館分曹，不共一廚」。
 
 12. **本機推理、不出宮**  
     LLM／VLM／YOLO 都在 Thor。花絮強調沒有把貴妃語音送公有雲（TTS 若用 Azure 要老實講：聲可雲、決策在地）。
@@ -84,11 +84,11 @@ K10 不跑大模型。它是隨身探子與準奏板；腦子在 **NVIDIA Jetson
 
 **不要寫進花絮（會穿幫）**
 
-- Dify 或 Hermes 跑在 K10 上  
+- Dify 跑在 K10 上  
 - Crazyflie 叼荔枝、空投  
 - K10 當 Crazyradio 或 Lighthouse 地面站  
 - 說飛鴿「看著落地」（落地靠燈塔座標，不是鏡頭伺服）  
-- 再載一份和 Hermes 搶顯存的大模型  
+- 再載一份搶顯存的大模型  
 
 ---
 

@@ -23,7 +23,7 @@ class DifyClient:
     ) -> None:
         self.api_url = (api_url or os.environ.get("DIFY_API_URL", "http://127.0.0.1:3080/v1")).rstrip("/")
         self.api_key = api_key if api_key is not None else os.environ.get("DIFY_API_KEY", "")
-        self.user = user or os.environ.get("DIFY_USER", "hermes")
+        self.user = user or os.environ.get("DIFY_USER", "dify")
         self.timeout = timeout
 
     def chat(self, query: str) -> str:

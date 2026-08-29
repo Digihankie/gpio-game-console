@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI used by the Hermes skill: plan a fetch via the local Dify bridge."""
+"""CLI: send a Reachy or K10 utterance to the local Dify dispatch bridge."""
 
 from __future__ import annotations
 

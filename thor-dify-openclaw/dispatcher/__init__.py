@@ -1,4 +1,4 @@
-"""Thor Dify ↔ Hermes fleet dispatch bridge."""
+"""Thor Dify fetch-planner dispatch bridge."""
 
 from .schema import Dispatch, DispatchError, extract_json_object, normalize_dispatch
 from .service import DispatchService
