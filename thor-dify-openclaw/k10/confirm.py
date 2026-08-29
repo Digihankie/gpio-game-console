@@ -5,7 +5,8 @@ from unihiker_k10 import button, rgb, screen
 import time
 import urequests
 
-THOR = "http://192.168.8.195:8766"
+# 燒進板子前改成現場 Thor 的 LAN 位址。
+THOR = "http://127.0.0.1:8766"
 
 
 def paint(lines, color=0xFFFFFF):
